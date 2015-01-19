@@ -1,4 +1,4 @@
-from agents import *
+from agent import *
 from environment import *
 from helper import *
 
@@ -12,8 +12,9 @@ def main():
 
     # Simple reflex agent
     simple_agent = SimpleReflexAgent(home, direction)
-    simple_agent.run()
+    simple_agent.run(room)
 
+    print "hello"
 if __name__ == '__main__':
     main()
 

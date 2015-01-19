@@ -10,13 +10,16 @@ class Vector:
         return Vector(self.x+vector.x, self.y+vector.y)
         
     def rotate_right(self):
-        self.x = self.y
-        self.y = self.x * (-1)
+        return Vector(self.y, -self.x)
 
     def rotate_left(self):
-        self.x = self.y * (-1)
-        self.y = self.x
+        return Vector(-self.x, self.y)
 
     def equal(self, vector):
         return (self.x == vector.x and self.y == vector.y)
 
+
+if __name__ == '__main__':
+    vec = Vector(0,1)
+    vec.rotate_right()
+    print(vec)

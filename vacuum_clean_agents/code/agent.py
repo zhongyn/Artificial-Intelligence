@@ -12,48 +12,57 @@ class Agent:
 
     def suck_dirt(self, room):
         room.floor.dirt[self.location.y][self.location.x] = False
+        print "suck_dirt"
+        print(self.location)
 
     def move_forward(self):
         self.location = self.location.add(self.direction)
+        print "move_forward"
+        print(self.location)
 
     def turn_right(self):
-        self.direction.rotate_right()
+        self.direction = self.direction.rotate_right()
+        print "direction:"
+        print(self.direction)
+        print "turn_right"
+        print(self.direction)
 
     def turn_left(self):
-        self.direction.rotate_left()
+        self.direction = self.direction.rotate_left()
+        print "turn_left"
 
     def turn_off(self):
         #TODO: turn off the agent
         print "Agent is turned off."
 
     def dirt_sensor(self, room):
-        return room.floor.dirt[self.location.x][self.location.y]
+        return room.floor.dirt[self.location.y][self.location.x]
 
     def wall_sensor(self, room):
         next_location = self.location.add(self.direction)
         return (next_location.x >= room.wall.width) or (next_location.x < 0) or (next_location.y < 0) or (next_location.y >= room.wall.height)
             
     def home_sensor(self, room):
-        return self.location.equal(room.home):
+        return self.location.equal(room.home)
   
 
 class SimpleReflexAgent(Agent):
     """A simple memoryless deterministic reflex agent."""
 
-    def run(room):
+    def run(self, room):
         while True:
             if self.dirt_sensor(room):
                 self.suck_dirt(room)
                 self.sucks_count += 1
             elif not self.wall_sensor(room):
                 self.move_forward()
-                self.location.str()
             elif self.home_sensor(room):
                 self.turn_off()
                 break
             else:
                 self.turn_right()
 
+            print
             self.actions_count += 1
             self.actions.append(self.actions_count)
             self.sucks.append(self.sucks_count)
