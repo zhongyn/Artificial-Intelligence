@@ -13,7 +13,7 @@ class Vector:
         return Vector(self.y, -self.x)
 
     def rotate_left(self):
-        return Vector(-self.x, self.y)
+        return Vector(-self.y, self.x)
 
     def equal(self, vector):
         return (self.x == vector.x and self.y == vector.y)
