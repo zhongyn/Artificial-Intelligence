@@ -87,29 +87,27 @@ class Admissible(Heuristic):
 class NonAdmissible(Heuristic):
     """Define admissible heuristic function."""
     def cost(self, state, goal):
-        pass
+        return 0
 
 
 class Astar(object):
     """A star search algorithm."""
-    def __init__(self, state, goal, heuristic):
+    def setup(self, state, goal, heuristic):
         self.state = state
         self.goal = goal
         self.heuristic = heuristic
         self.state.heurcost = self.heuristic.cost(self.state, self.goal)
         self.state.setpriority()
         self.frontier = pq.PriorityQueue()
-        self.frontier.add(self.state)
         self.explored = Set()
+        self.frontier.add(self.state)
 
     def actions(self, state):
         actions = []
         for i, peg in enumerate(state.pegs):
-            # print (i,peg)
             for j in range(len(state.pegs)):
                 if (i!=j) and peg:
                     actions.append((i,j))
-        # print actions
         return actions
 
     def search(self):
@@ -118,8 +116,6 @@ class Astar(object):
                 print 'There is no any solution.'
                 return False
             state = self.frontier.pop()
-            print 
-            print state.name
 
             if state.goaltest(self.goal):
                 print 'success', state.name
@@ -153,7 +149,8 @@ class RBFS(Astar):
 
 def test_astar(state, goal):
     heur = Admissible()
-    astar = Astar(state,goal,heur)
+    astar = Astar()
+    astar.setup(state, goal, heur)
     astar.search()
     print [i.name for i in astar.solution]
 
