@@ -1,4 +1,5 @@
 from problem_formulation import *
+import time
 
 def read_data(filename):
     states = []
@@ -9,31 +10,32 @@ def read_data(filename):
     states.pop()
     return [State([i,[],[]]) for i in states]
 
-def output_data(states):
-    # return [s.pegs[::-1] for s in states]
-    return
 
 class TowerOfCorvallis(object):
     """The game of TowerOfCorvallis."""
-    def __init__(self, initstate, algorithm, heuristic):
-        self.initstate = initstate
+    def __init__(self, node, algorithm, heuristic):
+        self.node = node
         self.algorithm = algorithm
         self.goal = self.setgoal()
         self.heuristic = heuristic
+        self.cputime = 0
 
     def setgoal(self):
-        return State([sorted(self.initstate.pegs[0]),[],[]])
+        return State([sorted(self.node.state.pegs[0]),[],[]])
 
     def run(self):
-        print self.initstate.name
-        print self.goal.name
-        self.algorithm.setup(self.initstate, self.goal, self.heuristic)
-        self.algorithm.search()
+        self.algorithm.setup(self.node, self.goal, self.heuristic)
+        a = time.clock()
+        self.algorithm.search(self.node, float('inf'))
+        self.cputime = time.clock() - a
+        print 'time:', self.cputime
+        print 'solution_length:', self.algorithm.solution_length
+        print 'nodes_expanded:', self.algorithm.nodes_expanded
         print 'Finish search'
 
     def printsolution(self):
+        return [[''.join(map(str, i[::-1])) for i in s.state.pegs] for s in self.algorithm.solution]
 
-        return [[''.join(map(str, i[::-1])) for i in s.pegs] for s in self.algorithm.solution]
 
 def test_toc():
     numdisks = [4]
@@ -45,13 +47,27 @@ def test_toc():
 
     for heur in heuristics:
         for states in states_list:
+            i = 0
             for state in states:
+                i += 1
                 print
+                print 'state:', i
+                print state.name
                 astar = Astar()
-                toc = TowerOfCorvallis(state, astar, heur)
+                toc = TowerOfCorvallis(Node(state), astar, heur)
                 toc.run()
-                print toc.printsolution()
 
+    for heur in heuristics:
+        for states in states_list:
+            i = 0
+            for state in states:
+                i += 1
+                print
+                print 'state:', i
+                print state.name
+                rbfs = RBFS()
+                toc = TowerOfCorvallis(Node(state), rbfs, heur)
+                toc.run()
 
 
 def test_io(filename):
@@ -61,3 +77,7 @@ def test_io(filename):
 if __name__ == '__main__':
     # test_io('../data/perms-4.txt')
     test_toc()
+
+
+
+

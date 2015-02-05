@@ -6,8 +6,8 @@ class PriorityQueue(object):
         self.pq = []
         self.entryfinder = {}
 
-    def contain(self, state):
-        if state.name in self.entryfinder:
+    def contain(self, node):
+        if node.name in self.entryfinder:
             return True
         return False
 
@@ -16,21 +16,27 @@ class PriorityQueue(object):
             return True
         return False
 
-    def add(self, state):
-        self.entryfinder[state.name] = state
-        heappush(self.pq, state)
+    def add(self, node):
+        self.entryfinder[node.name] = node
+        heappush(self.pq, node)
 
     def pop(self):
-        state = heappop(self.pq)
-        del self.entryfinder[state.name]
-        return state
+        while self.pq:
+            node = heappop(self.pq)
+            if not node.removed:
+                del self.entryfinder[node.name]
+                return node
+        return None
 
-    def getpriority(self, state):
-        return self.entryfinder[state.name].priority
+    def remove(self, node):
+        self.entryfinder[node.name].removed = True
 
-    def setpriority(self, state):
-        self.entryfinder[state.name].priority = state.priority
-        heapify(self.pq)
+    def getpriority(self, node):
+        return self.entryfinder[node.name].priority
+
+    def getsize(self):
+        return len(self.pq)
+
 
 
 
