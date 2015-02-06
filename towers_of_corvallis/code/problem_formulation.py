@@ -120,6 +120,8 @@ class Astar(object):
         self.frontier = PriorityQueue()
         self.explored = Set()
         self.frontier.add(self.node)
+        self.nodes_expanded = 0
+        self.solution_length = 0
 
     def actions(self, state):
         actions = []
@@ -170,10 +172,6 @@ class Astar(object):
 
 class RBFS(Astar):
     """Recursive best first search algoritm."""
-    def __int__(self):
-        self.abc = 0
-        self.solution_length = 0
-
     def search(self, node, flimit):
         if node.state.goaltest(self.goal):
             self.solution = self.backtrack(node)
@@ -181,7 +179,7 @@ class RBFS(Astar):
             return (True, 0)
         children = []
         for act in self.actions(node.state):
-            self.abc += 1
+            self.nodes_expanded += 1
             child = node.childnode(act)
             child.state.heurcost = self.heuristic.cost(child.state, self.goal)
             child.setpriority()
@@ -227,8 +225,12 @@ if __name__ == '__main__':
     g2 = State([[],[1,2],[3,4]])
     p3 = State([[1,2,3,4,5,6],[],[]])
     g3 = State([[6,5],[3,4],[1,2]])
-    p4 = State([[1,2,3,4,5,6,7,8,9,0],[],[]])
-    g4 = State([[6,5,7],[0,3,8,4],[1,9,2]])
+    p4 = State([[1,2,3,4,5,6,7,0],[],[]])
+    g4 = State([[6,5,7],[0,3,4],[1,2]])
+    p5 = State([[1,2,3,4,5,6,7,8,0],[],[]])
+    g5 = State([[6,5,7],[0,3,8,4],[1,2]])
+    p6 = State([[1,2,3,4,5,6,7,8,9,0],[],[]])
+    g6 = State([[6,5,7],[0,3,8,4],[1,9,2]])
 
     print 'Heuristic Test:'
     test_heuristic(p1,g1)
@@ -242,14 +244,16 @@ if __name__ == '__main__':
     # test_astar(Node(p2),g2)
     # test_astar(Node(p3),g3)
     # test_astar(Node(p4),g4)
+    # test_astar(Node(p5),g5)
+    test_astar(Node(p6),g6)
     print
 
-    print 'RFBS Test:'
-    test_rbfs(Node(p1),g1)
-    test_rbfs(Node(p2),g2)
-    test_rbfs(Node(p3),g3)
+    # print 'RFBS Test:'
+    # test_rbfs(Node(p1),g1)
+    # test_rbfs(Node(p2),g2)
+    # test_rbfs(Node(p3),g3)
     # test_rbfs(Node(p4),g4)
-    print
+    # print
 
 
 
