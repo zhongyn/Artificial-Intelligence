@@ -136,17 +136,29 @@ class Sudoku(object):
             if val in i.domain:
                 i.remove(val)
                 if i.domain_size() == 0:
+<<<<<<< HEAD
                     return False
+=======
+                    return None
+>>>>>>> develop
         for i in new_domain_table[:,y]:
             if val in i.domain:
                 i.remove(val)
                 if i.domain_size() == 0:
+<<<<<<< HEAD
                     return False
+=======
+                    return None
+>>>>>>> develop
         for i in new_domain_table[a:b,c:d].flat:
             if val in i.domain:
                 i.remove(val)
                 if i.domain_size() == 0:
+<<<<<<< HEAD
                     return False
+=======
+                    return None
+>>>>>>> develop
         new_domain_table[x][y].domain = [val]
         return new_domain_table
 
@@ -181,14 +193,24 @@ class Sudoku(object):
         for val in order_var:
             if self.consistent(x,y,val,state_table):
                 new_domain_table = self.inference(x,y,val,domain_table)
+<<<<<<< HEAD
                 if new_domain_table.size:
+=======
+                if new_domain_table is not None:
+>>>>>>> develop
                     new_state_table = state_table.copy()
                     new_state_table[x][y] = val
                     new_domain_size_table = self.update_domain_size(new_domain_table)
                     result = self.backtrack(new_state_table, new_domain_table, new_domain_size_table)
+<<<<<<< HEAD
                     if result.size:
                         return result
         return False
+=======
+                    if result is not None:
+                        return result
+        return None
+>>>>>>> develop
 
     def backtracking_search(self):
         print self.backtrack(self.state_table, self.domain_table, self.domain_size_table)
