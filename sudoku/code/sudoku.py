@@ -1,5 +1,6 @@
 import numpy as np
 from copy import deepcopy
+import random as rd
 
 class ReadData(object):
     """Import data as sudoku tables."""
@@ -39,11 +40,6 @@ class ReadData(object):
                 row.append(int(j))
         return row
 
-def readdata_test(filename):
-    readdata = ReadData()
-    readdata.read_data(filename)
-
-    return readdata.table_list['Easy']
 
 class Cell(object):
     """Represents a cell in the sudoku table."""
@@ -131,7 +127,6 @@ class Sudoku(object):
         new_domain_table = deepcopy(domain_table)
         new_domain_table[x][y].domain.extend([val]*3)
         a,b,c,d = self.box_index(x,y)
-        dumb = np.empty()
         for i in new_domain_table[x,:]:
             if val in i.domain:
                 i.remove(val)
@@ -180,11 +175,10 @@ class Sudoku(object):
         # print order_var
         for val in order_var:
             if self.consistent(x,y,val,state_table):
+                new_state_table = state_table.copy()
+                new_state_table[x][y] = val
                 new_domain_table = self.inference(x,y,val,domain_table)
-
                 if new_domain_table is not None:
-                    new_state_table = state_table.copy()
-                    new_state_table[x][y] = val
                     new_domain_size_table = self.update_domain_size(new_domain_table)
                     result = self.backtrack(new_state_table, new_domain_table, new_domain_size_table)
                     if result is not None:
@@ -194,14 +188,70 @@ class Sudoku(object):
     def backtracking_search(self):
         print self.backtrack(self.state_table, self.domain_table, self.domain_size_table)
 
+class RandomSlot(Sudoku):
+    """Instead of picking the most constrained slot, pick a slot randomly."""
+
+    def select_unassigned_variable(self, state_table, *arg):
+        unassigned = np.where(state_table==0)
+        rand_id = rd.randrange(unassigned[0].size)
+        return (unassigned[0][rand_id], unassigned[1][rand_id])
+
+class NakedTriples(Sudoku):
+    """Add a naked tripes rule to the inference."""
+
+    def inference(self, x, y, val, domain_table, k=2, state_table):
+        new_domain_table = deepcopy(domain_table)
+        new_domain_table[x][y].domain.extend([val]*3)
+        a,b,c,d = self.box_index(x,y)
+        unassigned_row = np.where(state_table[x,:]==0)
+        unassigned_col = np.where(state_table[:,y]==0)
+        unassigned_box = np.where(state_table[a:b,c:d].flat==0)
+
+        triple, triple_ids = self.findintersect(unassigned_row)
+        unassigned_size = unassigned_row[0].size
+        while tmp is not None:
+            for i in unassigned_row:
+                if i not in triple_ids:
+                    domain_table[x][i].domain
+
+        for i in new_domain_table[x,:]:
+            if val in i.domain:
+                i.remove(val)
+                if i.domain_size() == 0:
+                    return None
+        for i in new_domain_table[:,y]:
+            if val in i.domain:
+                i.remove(val)
+                if i.domain_size() == 0:
+                    return None
+        for i in new_domain_table[a:b,c:d].flat:
+            if val in i.domain:
+                i.remove(val)
+                if i.domain_size() == 0:
+                    return None
+        new_domain_table[x][y].domain = [val]
+        return new_domain_table
+
+
+
+
+
+def readdata_test(filename):
+    readdata = ReadData()
+    readdata.read_data(filename)
+    return readdata.table_list
+
 def sudoku_test(prob):
     sudoku = Sudoku(prob, 9)
+    # sudoku = RandomSlot(prob, 9)
     sudoku.backtracking_search()
 
 
 if __name__ == '__main__':
     probs = readdata_test('../data/repository.txt')
-    for p in probs:
-        sudoku_test(p)
+    for k,v in probs.iteritems():
+        print '\n',k
+        for p in v:
+            sudoku_test(p)
 
 
