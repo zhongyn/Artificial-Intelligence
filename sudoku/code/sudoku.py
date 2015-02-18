@@ -101,6 +101,7 @@ class Sudoku(object):
             union.update(i.domain)
         for i in domain_table[a:b,c:d].flat:
             union.update(i.domain)
+        print 'union:', union
         return union
 
     def select_unassigned_variable(self, state_table, domain_size_table):
@@ -177,7 +178,7 @@ class Sudoku(object):
             if self.consistent(x,y,val,state_table):
                 new_state_table = state_table.copy()
                 new_state_table[x][y] = val
-                new_domain_table = self.inference(x,y,val,domain_table)
+                new_domain_table = self.inference(x,y,val,domain_table,new_state_table)
                 if new_domain_table is not None:
                     new_domain_size_table = self.update_domain_size(new_domain_table)
                     result = self.backtrack(new_state_table, new_domain_table, new_domain_size_table)
@@ -199,39 +200,40 @@ class RandomSlot(Sudoku):
 class NakedTriples(Sudoku):
     """Add a naked tripes rule to the inference."""
 
-    def inference(self, x, y, val, domain_table, k=2, state_table):
+    def inference(self, x, y, val, domain_table, state_table):
         new_domain_table = deepcopy(domain_table)
-        new_domain_table[x][y].domain.extend([val]*3)
         a,b,c,d = self.box_index(x,y)
+
         unassigned_row = np.where(state_table[x,:]==0)
         unassigned_col = np.where(state_table[:,y]==0)
         unassigned_box = np.where(state_table[a:b,c:d].flat==0)
 
-        triple, triple_ids = self.findintersect(unassigned_row)
-        unassigned_size = unassigned_row[0].size
-        while tmp is not None:
-            for i in unassigned_row:
-                if i not in triple_ids:
-                    domain_table[x][i].domain
+        self.remove_nake_triple(x,y,unassigned_row[0],new_domain_table[x,:])
+        self.remove_nake_triple(x,y,unassigned_col[0],new_domain_table[:,y])
+        self.remove_nake_triple(x,y,unassigned_box[0],new_domain_table[a:b,c:d].flat)
 
-        for i in new_domain_table[x,:]:
-            if val in i.domain:
-                i.remove(val)
-                if i.domain_size() == 0:
-                    return None
-        for i in new_domain_table[:,y]:
-            if val in i.domain:
-                i.remove(val)
-                if i.domain_size() == 0:
-                    return None
-        for i in new_domain_table[a:b,c:d].flat:
-            if val in i.domain:
-                i.remove(val)
-                if i.domain_size() == 0:
-                    return None
-        new_domain_table[x][y].domain = [val]
         return new_domain_table
 
+
+    def findintersect(self,x,y,unassigned,domain_unit):
+        for i in unassigned:
+            for j in unassigned:
+                if i != j:
+                    print domain_unit[i].domain
+                    print domain_unit[j].domain
+                    double = set(domain_unit[i].domain).union(domain_unit[j].domain)
+                    print double
+                    if len(double) <= 2:
+                        return (double,set([i,j]))
+        return None
+
+    def remove_nake_triple(self,x,y,unassigned,domain_unit):
+        result = self.findintersect(x, y, unassigned, domain_unit)
+        while result is not None:
+            triple, triple_ids = result
+            for i in unassigned:
+                if i not in triple_ids:
+                    domain_unit[i].domain = list(set(domain_unit[i].domain).difference(triple))
 
 
 
@@ -242,7 +244,8 @@ def readdata_test(filename):
     return readdata.table_list
 
 def sudoku_test(prob):
-    sudoku = Sudoku(prob, 9)
+    sudoku = NakedTriples(prob, 9)
+    # sudoku = Sudoku(prob, 9)
     # sudoku = RandomSlot(prob, 9)
     sudoku.backtracking_search()
 
