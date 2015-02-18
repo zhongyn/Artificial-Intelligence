@@ -264,7 +264,7 @@ def sudoku_random_test(pr):
 if __name__ == '__main__':
     probs = readdata_test('../data/repository.txt')
     for k,v in probs.iteritems():
-        np.savetxt('../data/'+k, sudoku_random_test(v), fmt='%d')
+        np.savetxt('../data/'+k+'.txt, sudoku_random_test(v), delimiter=',', fmt='%d')
 
 
 
