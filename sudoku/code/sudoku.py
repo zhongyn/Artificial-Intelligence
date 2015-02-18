@@ -68,6 +68,7 @@ class Sudoku(object):
         self.domain_table = np.empty([size,size], dtype=object)
         self.domain_size_table = np.empty([size,size], dtype=int)
         self.init_domain()
+        self.backtrack_count = 0
 
     def init_domain(self):
         for i in xrange(self.table_size):
@@ -183,10 +184,11 @@ class Sudoku(object):
                     result = self.backtrack(new_state_table, new_domain_table, new_domain_size_table)
                     if result is not None:
                         return result
+        self.backtrack_count += 1
         return None
 
     def backtracking_search(self):
-        print self.backtrack(self.state_table, self.domain_table, self.domain_size_table)
+        self.backtrack(self.state_table, self.domain_table, self.domain_size_table)
 
 class RandomSlot(Sudoku):
     """Instead of picking the most constrained slot, pick a slot randomly."""
@@ -196,41 +198,41 @@ class RandomSlot(Sudoku):
         rand_id = rd.randrange(unassigned[0].size)
         return (unassigned[0][rand_id], unassigned[1][rand_id])
 
-class NakedTriples(Sudoku):
-    """Add a naked tripes rule to the inference."""
+# class NakedTriples(Sudoku):
+#     """Add a naked tripes rule to the inference."""
 
-    def inference(self, x, y, val, domain_table, k=2, state_table):
-        new_domain_table = deepcopy(domain_table)
-        new_domain_table[x][y].domain.extend([val]*3)
-        a,b,c,d = self.box_index(x,y)
-        unassigned_row = np.where(state_table[x,:]==0)
-        unassigned_col = np.where(state_table[:,y]==0)
-        unassigned_box = np.where(state_table[a:b,c:d].flat==0)
+#     def inference(self, x, y, val, domain_table, k=2, state_table):
+#         new_domain_table = deepcopy(domain_table)
+#         new_domain_table[x][y].domain.extend([val]*3)
+#         a,b,c,d = self.box_index(x,y)
+#         unassigned_row = np.where(state_table[x,:]==0)
+#         unassigned_col = np.where(state_table[:,y]==0)
+#         unassigned_box = np.where(state_table[a:b,c:d].flat==0)
 
-        triple, triple_ids = self.findintersect(unassigned_row)
-        unassigned_size = unassigned_row[0].size
-        while tmp is not None:
-            for i in unassigned_row:
-                if i not in triple_ids:
-                    domain_table[x][i].domain
+#         triple, triple_ids = self.findintersect(unassigned_row)
+#         unassigned_size = unassigned_row[0].size
+#         while tmp is not None:
+#             for i in unassigned_row:
+#                 if i not in triple_ids:
+#                     domain_table[x][i].domain
 
-        for i in new_domain_table[x,:]:
-            if val in i.domain:
-                i.remove(val)
-                if i.domain_size() == 0:
-                    return None
-        for i in new_domain_table[:,y]:
-            if val in i.domain:
-                i.remove(val)
-                if i.domain_size() == 0:
-                    return None
-        for i in new_domain_table[a:b,c:d].flat:
-            if val in i.domain:
-                i.remove(val)
-                if i.domain_size() == 0:
-                    return None
-        new_domain_table[x][y].domain = [val]
-        return new_domain_table
+#         for i in new_domain_table[x,:]:
+#             if val in i.domain:
+#                 i.remove(val)
+#                 if i.domain_size() == 0:
+#                     return None
+#         for i in new_domain_table[:,y]:
+#             if val in i.domain:
+#                 i.remove(val)
+#                 if i.domain_size() == 0:
+#                     return None
+#         for i in new_domain_table[a:b,c:d].flat:
+#             if val in i.domain:
+#                 i.remove(val)
+#                 if i.domain_size() == 0:
+#                     return None
+#         new_domain_table[x][y].domain = [val]
+#         return new_domain_table
 
 
 
@@ -243,15 +245,28 @@ def readdata_test(filename):
 
 def sudoku_test(prob):
     sudoku = Sudoku(prob, 9)
-    # sudoku = RandomSlot(prob, 9)
     sudoku.backtracking_search()
+    print 'count:',sudoku.backtrack_count
+
+def sudoku_random_test():
+    probs = readdata_test('../data/repository.txt')
+    pr = probs['Hard']
+    for i, prob in enumerate(pr):
+        print '\nproblem:',i
+        sudoku = RandomSlot(prob, 9)
+        sudoku.backtracking_search()
+        print 'count:',sudoku.backtrack_count
+
+
 
 
 if __name__ == '__main__':
-    probs = readdata_test('../data/repository.txt')
-    for k,v in probs.iteritems():
-        print '\n',k
-        for p in v:
-            sudoku_test(p)
+    sudoku_random_test()
+
+
+
+
+
+
 
 
