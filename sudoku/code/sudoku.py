@@ -68,6 +68,7 @@ class Sudoku(object):
         self.domain_table = np.empty([size,size], dtype=object)
         self.domain_size_table = np.empty([size,size], dtype=int)
         self.init_domain()
+        self.backtrack_count = 0
 
     def init_domain(self):
         for i in xrange(self.table_size):
@@ -184,6 +185,7 @@ class Sudoku(object):
                     result = self.backtrack(new_state_table, new_domain_table, new_domain_size_table)
                     if result is not None:
                         return result
+        self.backtrack_count += 1
         return None
 
     def backtracking_search(self):
@@ -246,9 +248,11 @@ def readdata_test(filename):
 
 def sudoku_test(prob):
     # sudoku = NakedTriples(prob, 9)
-    # sudoku = Sudoku(prob, 9)
-    sudoku = RandomSlot(prob, 9)
-    sudoku.backtracking_search()
+    sudoku1 = Sudoku(prob, 9)
+    sudoku2 = RandomSlot(prob, 9)
+    sudoku1.backtracking_search()
+    sudoku2.backtracking_search()
+    return sudoku1.
 
 
 if __name__ == '__main__':
