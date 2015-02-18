@@ -195,7 +195,8 @@ class RandomSlot(Sudoku):
 
     def select_unassigned_variable(self, state_table, *arg):
         unassigned = np.where(state_table==0)
-        rand_id = rd.randrange(unassigned[0].size)
+        # rand_id = rd.randrange(unassigned[0].size)
+        rand_id = 0
         return (unassigned[0][rand_id], unassigned[1][rand_id])
 
 # class NakedTriples(Sudoku):
@@ -244,24 +245,26 @@ def readdata_test(filename):
     return readdata.table_list
 
 def sudoku_test(prob):
-    sudoku = Sudoku(prob, 9)
-    sudoku.backtracking_search()
     print 'count:',sudoku.backtrack_count
 
-def sudoku_random_test():
-    probs = readdata_test('../data/repository.txt')
-    pr = probs['Hard']
+def sudoku_random_test(pr):
+    result = []
     for i, prob in enumerate(pr):
         print '\nproblem:',i
-        sudoku = RandomSlot(prob, 9)
-        sudoku.backtracking_search()
-        print 'count:',sudoku.backtrack_count
+        sudoku1 = Sudoku(prob, 9)
+        sudoku1.backtracking_search()
+        sudoku2 = RandomSlot(prob, 9)
+        sudoku2.backtracking_search()
+        result.append([i+1, sudoku1.backtrack_count, sudoku2.backtrack_count])
+    return result
 
 
 
 
 if __name__ == '__main__':
-    sudoku_random_test()
+    probs = readdata_test('../data/repository.txt')
+    for k,v in probs.iteritems():
+        np.savetxt('../data/'+k, sudoku_random_test(v), fmt='%d')
 
 
 
