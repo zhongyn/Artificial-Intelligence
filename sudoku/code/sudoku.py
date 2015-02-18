@@ -101,7 +101,7 @@ class Sudoku(object):
             union.update(i.domain)
         for i in domain_table[a:b,c:d].flat:
             union.update(i.domain)
-        print 'union:', union
+        # print 'union:', union
         return union
 
     def select_unassigned_variable(self, state_table, domain_size_table):
@@ -124,7 +124,7 @@ class Sudoku(object):
                 normal.append(val)
         return lsv+normal
 
-    def inference(self, x, y, val, domain_table):
+    def inference(self, x, y, val, domain_table, *arg):
         new_domain_table = deepcopy(domain_table)
         new_domain_table[x][y].domain.extend([val]*3)
         a,b,c,d = self.box_index(x,y)
@@ -194,7 +194,8 @@ class RandomSlot(Sudoku):
 
     def select_unassigned_variable(self, state_table, *arg):
         unassigned = np.where(state_table==0)
-        rand_id = rd.randrange(unassigned[0].size)
+        # rand_id = rd.randrange(unassigned[0].size)
+        rand_id = 0
         return (unassigned[0][rand_id], unassigned[1][rand_id])
 
 class NakedTriples(Sudoku):
@@ -244,9 +245,9 @@ def readdata_test(filename):
     return readdata.table_list
 
 def sudoku_test(prob):
-    sudoku = NakedTriples(prob, 9)
+    # sudoku = NakedTriples(prob, 9)
     # sudoku = Sudoku(prob, 9)
-    # sudoku = RandomSlot(prob, 9)
+    sudoku = RandomSlot(prob, 9)
     sudoku.backtracking_search()
 
 
