@@ -67,8 +67,9 @@ class Sudoku(object):
         self.basic_domain = np.arange(1,size+1)
         self.domain_table = np.empty([size,size], dtype=object)
         self.domain_size_table = np.empty([size,size], dtype=int)
-        self.init_domain()
         self.backtrack_count = 0
+        self.filled_in_number = 0
+        self.init_domain()
 
     def init_domain(self):
         for i in xrange(self.table_size):
@@ -77,6 +78,7 @@ class Sudoku(object):
                     cell = Cell(self.avaible_domain(i,j))
                 else:
                     cell = Cell([self.state_table[i][j]])
+                    self.filled_in_number += 1
                 self.domain_table[i][j] = cell
                 self.domain_size_table[i][j] = cell.domain_size()     
 
@@ -189,7 +191,7 @@ class Sudoku(object):
         return None
 
     def backtracking_search(self):
-        print self.backtrack(self.state_table, self.domain_table, self.domain_size_table)
+        self.backtrack(self.state_table, self.domain_table, self.domain_size_table)
 
 class RandomSlot(Sudoku):
     """Instead of picking the most constrained slot, pick a slot randomly."""
@@ -200,7 +202,7 @@ class RandomSlot(Sudoku):
         rand_id = 0
         return (unassigned[0][rand_id], unassigned[1][rand_id])
 
-class NakedTriples(Sudoku):
+class NakedPairs(Sudoku):
     """Add a naked tripes rule to the inference."""
 
     def inference(self, x, y, val, domain_table, state_table):
@@ -250,12 +252,23 @@ class NakedTriples(Sudoku):
     def remove_naked(self,x,y,unassigned,domain_unit):
         result = self.findintersect(unassigned, domain_unit)
         if result is not None:
-            triple, triple_ids = result
+            naked, naked_ids = result
             for i in unassigned:
-                if i not in triple_ids:
-                    domain_unit[i].domain = list(set(domain_unit[i].domain).difference(triple))
+                if i not in naked_ids:
+                    domain_unit[i].domain = list(set(domain_unit[i].domain).difference(naked))
 
 
+class NakedTriples(NakedPairs):
+
+    def findintersect(self,unassigned,domain_unit):
+        for i in unassigned:
+            for j in unassigned:
+                for k in unassigned:
+                    if i != j and i!= k and j!=k:
+                        naked = set(domain_unit[i].domain).union(domain_unit[j].domain, domain_unit[k].domain)
+                        if len(naked) <= 3:
+                            return (naked,set([i,j,k]))
+        return None
 
 
 def readdata_test(filename):
@@ -263,12 +276,22 @@ def readdata_test(filename):
     readdata.read_data(filename)
     return readdata.table_list
 
-def sudoku_test(prob):
-    sudoku1 = Sudoku(prob, 9)
-    sudoku2 = RandomSlot(prob, 9)
-    sudoku1.backtracking_search()
-    sudoku2.backtracking_search()
-    # return sudoku1.
+def sudoku_test(probs):
+    result = []
+    for i,prob in enumerate(probs):
+        sudoku1 = Sudoku(prob, 9)
+        sudoku2 = RandomSlot(prob, 9)
+        sudoku3 = NakedPairs(prob, 9)
+        sudoku4 = NakedTriples(prob, 9)
+        sudoku1.backtracking_search()
+        sudoku2.backtracking_search()
+        sudoku3.backtracking_search()
+        sudoku4.backtracking_search()
+        tmp = [i+1,sudoku1.backtrack_count,sudoku2.backtrack_count,sudoku3.backtrack_count,sudoku4.backtrack_count,sudoku1.filled_in_number]
+        print tmp
+        result.append(tmp)
+    return result
+
 
 def naked_test(prob):
     sudoku = NakedTriples(prob, 9)
@@ -280,11 +303,10 @@ if __name__ == '__main__':
     probs = readdata_test('../data/repository.txt')
     for k,v in probs.iteritems():
         print '\n',k
-        for i,p in enumerate(v):
-            print 'prob:',i
-            sudoku_test(p)
-            # print naked_test(p)
-
+        result = sudoku_test(v)
+        average = np.mean(result,axis=0)
+        total = np.concatenate((result,[average]),axis=0)
+        np.savetxt('../data'+k+'.txt', total, delimiter=',', fmt='%d')
 
 
 
