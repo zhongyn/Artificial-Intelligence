@@ -207,32 +207,49 @@ class NakedTriples(Sudoku):
         new_domain_table = deepcopy(domain_table)
         a,b,c,d = self.box_index(x,y)
 
-        unassigned_row = np.where(state_table[x,:]==0)
-        unassigned_col = np.where(state_table[:,y]==0)
-        unassigned_box = np.where(state_table[a:b,c:d].flat==0)
+        unassigned_row = np.where(state_table[x,:]==0)[0]
+        unassigned_col = np.where(state_table[:,y]==0)[0]
+        unassigned_box = np.where(state_table[a:b,c:d].flat==0)[0]
 
-        self.remove_nake_triple(x,y,unassigned_row[0],new_domain_table[x,:])
-        self.remove_nake_triple(x,y,unassigned_col[0],new_domain_table[:,y])
-        self.remove_nake_triple(x,y,unassigned_box[0],new_domain_table[a:b,c:d].flat)
+        for i in unassigned_row:
+            if val in new_domain_table[x,i].domain:
+                new_domain_table[x,i].remove(val)
+        for i in unassigned_col:
+            if val in new_domain_table[i,y].domain:
+                new_domain_table[i,y].remove(val)
+        for i in unassigned_box:
+            if val in new_domain_table[a:b,c:d].flat[i].domain:
+                new_domain_table[a:b,c:d].flat[i].remove(val)
+
+        self.remove_naked(x,y,unassigned_row,new_domain_table[x,:])
+        self.remove_naked(x,y,unassigned_col,new_domain_table[:,y])
+        self.remove_naked(x,y,unassigned_box,new_domain_table[a:b,c:d].flat)
+
+        for i in unassigned_row:
+            if new_domain_table[x,i].domain_size() == 0:
+                return None
+        for i in unassigned_col:
+            if new_domain_table[i,y].domain_size() == 0:
+                return None
+        for i in unassigned_box:
+            if new_domain_table[a:b,c:d].flat[i].domain_size() == 0:
+                return None
 
         return new_domain_table
 
 
-    def findintersect(self,x,y,unassigned,domain_unit):
+    def findintersect(self,unassigned,domain_unit):
         for i in unassigned:
             for j in unassigned:
                 if i != j:
-                    print domain_unit[i].domain
-                    print domain_unit[j].domain
-                    double = set(domain_unit[i].domain).union(domain_unit[j].domain)
-                    print double
-                    if len(double) <= 2:
-                        return (double,set([i,j]))
+                    naked = set(domain_unit[i].domain).union(domain_unit[j].domain)
+                    if len(naked) <= 2:
+                        return (naked,set([i,j]))
         return None
 
-    def remove_nake_triple(self,x,y,unassigned,domain_unit):
-        result = self.findintersect(x, y, unassigned, domain_unit)
-        while result is not None:
+    def remove_naked(self,x,y,unassigned,domain_unit):
+        result = self.findintersect(unassigned, domain_unit)
+        if result is not None:
             triple, triple_ids = result
             for i in unassigned:
                 if i not in triple_ids:
@@ -247,19 +264,29 @@ def readdata_test(filename):
     return readdata.table_list
 
 def sudoku_test(prob):
-    # sudoku = NakedTriples(prob, 9)
     sudoku1 = Sudoku(prob, 9)
     sudoku2 = RandomSlot(prob, 9)
     sudoku1.backtracking_search()
     sudoku2.backtracking_search()
-    return sudoku1.
+    # return sudoku1.
+
+def naked_test(prob):
+    sudoku = NakedTriples(prob, 9)
+    sudoku.backtracking_search()
+    return sudoku.backtrack_count
 
 
 if __name__ == '__main__':
     probs = readdata_test('../data/repository.txt')
     for k,v in probs.iteritems():
         print '\n',k
-        for p in v:
+        for i,p in enumerate(v):
+            print 'prob:',i
             sudoku_test(p)
+            # print naked_test(p)
+
+
+
+
 
 
